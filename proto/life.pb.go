@@ -21,30 +21,31 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type BoardRequest struct {
+// ── Requête : rectangle à afficher ──────────────────────────────────────────
+type ViewportRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Width         int32                  `protobuf:"varint,1,opt,name=width,proto3" json:"width,omitempty"`
-	Height        int32                  `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
-	Alive         []*Cell                `protobuf:"bytes,3,rep,name=alive,proto3" json:"alive,omitempty"`                   // cellules vivantes au départ
-	TickMs        float64                `protobuf:"fixed64,4,opt,name=tick_ms,json=tickMs,proto3" json:"tick_ms,omitempty"` // durée d’un pas, côté serveur
+	ViewX         int32                  `protobuf:"varint,1,opt,name=view_x,json=viewX,proto3" json:"view_x,omitempty"` // coin X (0 ≤ x < 500)
+	ViewY         int32                  `protobuf:"varint,2,opt,name=view_y,json=viewY,proto3" json:"view_y,omitempty"` // coin Y (0 ≤ y < 500)
+	ViewW         int32                  `protobuf:"varint,3,opt,name=view_w,json=viewW,proto3" json:"view_w,omitempty"` // largeur  (≤ 500)
+	ViewH         int32                  `protobuf:"varint,4,opt,name=view_h,json=viewH,proto3" json:"view_h,omitempty"` // hauteur  (≤ 500)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *BoardRequest) Reset() {
-	*x = BoardRequest{}
+func (x *ViewportRequest) Reset() {
+	*x = ViewportRequest{}
 	mi := &file_life_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *BoardRequest) String() string {
+func (x *ViewportRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BoardRequest) ProtoMessage() {}
+func (*ViewportRequest) ProtoMessage() {}
 
-func (x *BoardRequest) ProtoReflect() protoreflect.Message {
+func (x *ViewportRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_life_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -56,39 +57,40 @@ func (x *BoardRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use BoardRequest.ProtoReflect.Descriptor instead.
-func (*BoardRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use ViewportRequest.ProtoReflect.Descriptor instead.
+func (*ViewportRequest) Descriptor() ([]byte, []int) {
 	return file_life_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *BoardRequest) GetWidth() int32 {
+func (x *ViewportRequest) GetViewX() int32 {
 	if x != nil {
-		return x.Width
+		return x.ViewX
 	}
 	return 0
 }
 
-func (x *BoardRequest) GetHeight() int32 {
+func (x *ViewportRequest) GetViewY() int32 {
 	if x != nil {
-		return x.Height
+		return x.ViewY
 	}
 	return 0
 }
 
-func (x *BoardRequest) GetAlive() []*Cell {
+func (x *ViewportRequest) GetViewW() int32 {
 	if x != nil {
-		return x.Alive
-	}
-	return nil
-}
-
-func (x *BoardRequest) GetTickMs() float64 {
-	if x != nil {
-		return x.TickMs
+		return x.ViewW
 	}
 	return 0
 }
 
+func (x *ViewportRequest) GetViewH() int32 {
+	if x != nil {
+		return x.ViewH
+	}
+	return 0
+}
+
+// ── Éléments de jeu ─────────────────────────────────────────────────────────
 type Cell struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	X             int32                  `protobuf:"varint,1,opt,name=x,proto3" json:"x,omitempty"`
@@ -145,6 +147,7 @@ type Board struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Generation    int32                  `protobuf:"varint,1,opt,name=generation,proto3" json:"generation,omitempty"`
 	Alive         []*Cell                `protobuf:"bytes,2,rep,name=alive,proto3" json:"alive,omitempty"`
+	SentUnixns    int64                  `protobuf:"varint,3,opt,name=sent_unixns,json=sentUnixns,proto3" json:"sent_unixns,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -193,30 +196,38 @@ func (x *Board) GetAlive() []*Cell {
 	return nil
 }
 
+func (x *Board) GetSentUnixns() int64 {
+	if x != nil {
+		return x.SentUnixns
+	}
+	return 0
+}
+
 var File_life_proto protoreflect.FileDescriptor
 
 const file_life_proto_rawDesc = "" +
 	"\n" +
 	"\n" +
-	"life.proto\x12\x04life\"w\n" +
-	"\fBoardRequest\x12\x14\n" +
-	"\x05width\x18\x01 \x01(\x05R\x05width\x12\x16\n" +
-	"\x06height\x18\x02 \x01(\x05R\x06height\x12 \n" +
-	"\x05alive\x18\x03 \x03(\v2\n" +
-	".life.CellR\x05alive\x12\x17\n" +
-	"\atick_ms\x18\x04 \x01(\x01R\x06tickMs\"\"\n" +
+	"life.proto\x12\x04life\"m\n" +
+	"\x0fViewportRequest\x12\x15\n" +
+	"\x06view_x\x18\x01 \x01(\x05R\x05viewX\x12\x15\n" +
+	"\x06view_y\x18\x02 \x01(\x05R\x05viewY\x12\x15\n" +
+	"\x06view_w\x18\x03 \x01(\x05R\x05viewW\x12\x15\n" +
+	"\x06view_h\x18\x04 \x01(\x05R\x05viewH\"\"\n" +
 	"\x04Cell\x12\f\n" +
 	"\x01x\x18\x01 \x01(\x05R\x01x\x12\f\n" +
-	"\x01y\x18\x02 \x01(\x05R\x01y\"I\n" +
+	"\x01y\x18\x02 \x01(\x05R\x01y\"j\n" +
 	"\x05Board\x12\x1e\n" +
 	"\n" +
 	"generation\x18\x01 \x01(\x05R\n" +
 	"generation\x12 \n" +
 	"\x05alive\x18\x02 \x03(\v2\n" +
-	".life.CellR\x05alive2A\n" +
+	".life.CellR\x05alive\x12\x1f\n" +
+	"\vsent_unixns\x18\x03 \x01(\x03R\n" +
+	"sentUnixns2B\n" +
 	"\n" +
-	"GameOfLife\x123\n" +
-	"\fStreamBoards\x12\x12.life.BoardRequest\x1a\v.life.Board\"\x000\x01B(Z&github.com/ugora/gameoflife/proto;lifeb\x06proto3"
+	"GameOfLife\x124\n" +
+	"\fStreamBoards\x12\x15.life.ViewportRequest\x1a\v.life.Board0\x01B(Z&github.com/ugora/gameoflife/proto;lifeb\x06proto3"
 
 var (
 	file_life_proto_rawDescOnce sync.Once
@@ -232,20 +243,19 @@ func file_life_proto_rawDescGZIP() []byte {
 
 var file_life_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_life_proto_goTypes = []any{
-	(*BoardRequest)(nil), // 0: life.BoardRequest
-	(*Cell)(nil),         // 1: life.Cell
-	(*Board)(nil),        // 2: life.Board
+	(*ViewportRequest)(nil), // 0: life.ViewportRequest
+	(*Cell)(nil),            // 1: life.Cell
+	(*Board)(nil),           // 2: life.Board
 }
 var file_life_proto_depIdxs = []int32{
-	1, // 0: life.BoardRequest.alive:type_name -> life.Cell
-	1, // 1: life.Board.alive:type_name -> life.Cell
-	0, // 2: life.GameOfLife.StreamBoards:input_type -> life.BoardRequest
-	2, // 3: life.GameOfLife.StreamBoards:output_type -> life.Board
-	3, // [3:4] is the sub-list for method output_type
-	2, // [2:3] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	1, // 0: life.Board.alive:type_name -> life.Cell
+	0, // 1: life.GameOfLife.StreamBoards:input_type -> life.ViewportRequest
+	2, // 2: life.GameOfLife.StreamBoards:output_type -> life.Board
+	2, // [2:3] is the sub-list for method output_type
+	1, // [1:2] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_life_proto_init() }

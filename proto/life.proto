@@ -1,25 +1,21 @@
 syntax = "proto3";
-option go_package = "github.com/ugora/gameoflife/proto;life";
+
 package life;
+option go_package = "github.com/ugora/gameoflife/proto;life";
+
+/*── Service : un plateau global 500×500, vues (viewport) par client ─────────*/
 service GameOfLife {
-  // Flux infini de grilles : le client envoie les dimensions,
-  // le serveur répond à chaque tick.
-  rpc StreamBoards (BoardRequest) returns (stream Board) {}
+  rpc StreamBoards (ViewportRequest) returns (stream Board);
 }
 
-message BoardRequest {
-  int32 width  = 1;
-  int32 height = 2;
-  repeated Cell alive = 3;     // cellules vivantes au départ
-  double tick_ms = 4;          // durée d’un pas, côté serveur
+/*── Requête : rectangle à afficher ──────────────────────────────────────────*/
+message ViewportRequest {
+  int32 view_x = 1;   // coin X (0 ≤ x < 500)
+  int32 view_y = 2;   // coin Y (0 ≤ y < 500)
+  int32 view_w = 3;   // largeur  (≤ 500)
+  int32 view_h = 4;   // hauteur  (≤ 500)
 }
 
-message Cell {
-  int32 x = 1;
-  int32 y = 2;
-}
-
-message Board {
-  int32 generation = 1;
-  repeated Cell alive = 2;
-}
+/*── Éléments de jeu ─────────────────────────────────────────────────────────*/
+message Cell  { int32 x = 1; int32 y = 2; }        // coord. relatives au viewport
+message Board { int32 generation = 1; repeated Cell alive = 2;   int64        sent_unixns = 3;}

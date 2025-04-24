@@ -25,10 +25,10 @@ const (
 // GameOfLifeClient is the client API for GameOfLife service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+//
+// ── Service : un plateau global 500×500, vues (viewport) par client ─────────
 type GameOfLifeClient interface {
-	// Flux infini de grilles : le client envoie les dimensions,
-	// le serveur répond à chaque tick.
-	StreamBoards(ctx context.Context, in *BoardRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Board], error)
+	StreamBoards(ctx context.Context, in *ViewportRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Board], error)
 }
 
 type gameOfLifeClient struct {
@@ -39,13 +39,13 @@ func NewGameOfLifeClient(cc grpc.ClientConnInterface) GameOfLifeClient {
 	return &gameOfLifeClient{cc}
 }
 
-func (c *gameOfLifeClient) StreamBoards(ctx context.Context, in *BoardRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Board], error) {
+func (c *gameOfLifeClient) StreamBoards(ctx context.Context, in *ViewportRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[Board], error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	stream, err := c.cc.NewStream(ctx, &GameOfLife_ServiceDesc.Streams[0], GameOfLife_StreamBoards_FullMethodName, cOpts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &grpc.GenericClientStream[BoardRequest, Board]{ClientStream: stream}
+	x := &grpc.GenericClientStream[ViewportRequest, Board]{ClientStream: stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -61,10 +61,10 @@ type GameOfLife_StreamBoardsClient = grpc.ServerStreamingClient[Board]
 // GameOfLifeServer is the server API for GameOfLife service.
 // All implementations must embed UnimplementedGameOfLifeServer
 // for forward compatibility.
+//
+// ── Service : un plateau global 500×500, vues (viewport) par client ─────────
 type GameOfLifeServer interface {
-	// Flux infini de grilles : le client envoie les dimensions,
-	// le serveur répond à chaque tick.
-	StreamBoards(*BoardRequest, grpc.ServerStreamingServer[Board]) error
+	StreamBoards(*ViewportRequest, grpc.ServerStreamingServer[Board]) error
 	mustEmbedUnimplementedGameOfLifeServer()
 }
 
@@ -75,7 +75,7 @@ type GameOfLifeServer interface {
 // pointer dereference when methods are called.
 type UnimplementedGameOfLifeServer struct{}
 
-func (UnimplementedGameOfLifeServer) StreamBoards(*BoardRequest, grpc.ServerStreamingServer[Board]) error {
+func (UnimplementedGameOfLifeServer) StreamBoards(*ViewportRequest, grpc.ServerStreamingServer[Board]) error {
 	return status.Errorf(codes.Unimplemented, "method StreamBoards not implemented")
 }
 func (UnimplementedGameOfLifeServer) mustEmbedUnimplementedGameOfLifeServer() {}
@@ -100,11 +100,11 @@ func RegisterGameOfLifeServer(s grpc.ServiceRegistrar, srv GameOfLifeServer) {
 }
 
 func _GameOfLife_StreamBoards_Handler(srv interface{}, stream grpc.ServerStream) error {
-	m := new(BoardRequest)
+	m := new(ViewportRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(GameOfLifeServer).StreamBoards(m, &grpc.GenericServerStream[BoardRequest, Board]{ServerStream: stream})
+	return srv.(GameOfLifeServer).StreamBoards(m, &grpc.GenericServerStream[ViewportRequest, Board]{ServerStream: stream})
 }
 
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
